@@ -103,9 +103,11 @@ svg.chart{width:100%;height:190px;display:block}
   background:rgba(255,253,246,.96);backdrop-filter:blur(8px)}
 #tabbar .in{display:flex;max-width:640px;margin:0 auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 #tabbar button{flex:1;font:inherit;background:none;border:none;color:var(--sub);font-size:11px;font-weight:700;
-  padding:5px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+  padding:6px 2px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;
+  border-radius:14px;margin:0 2px;transition:background .15s,color .15s}
 #tabbar button .ic{font-size:19px;line-height:1.2}
-#tabbar button.on{color:var(--deep)}
+#tabbar button.on{color:#fffdf6;background:var(--deep)}
+#tabbar button.on .ic{filter:drop-shadow(0 0 1px rgba(255,255,255,.6))}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -154,15 +156,15 @@ function umaArr(rules,n){
   var m3={none:[0,0,0],'10':[10,0,-10],'20':[20,0,-20]};
   return n===4?(m4[key]||m4.none):(m3[key]||m3.none);
 }
-function roundVal(x,mode){
-  var s=x<0?-1:1,a=Math.abs(x);
-  var base=Math.floor(a),frac=a-base,r;
-  if(mode==='round')r=frac>=0.5-1e-9?base+1:base;
-  else if(mode==='gosha')r=frac>=0.6-1e-9?base+1:base;
-  else if(mode==='floor')r=base;
-  else if(mode==='ceil')r=frac>1e-9?base+1:base;
-  else return x;
-  return s*r;
+function roundPts(p,mode){
+  var s=p<0?-1:1,a=Math.abs(p);
+  var q=Math.floor(a/1000)*1000,h=a-q,up;
+  if(mode==='round')up=h>=500;
+  else if(mode==='gosha')up=h>=600;
+  else if(mode==='floor')up=false;
+  else if(mode==='ceil')up=h>0;
+  else return p;
+  return s*(up?q+1000:q);
 }
 function ranksOf(vals,n){
   var order=[];for(var i=0;i<n;i++)order.push(i);
@@ -176,9 +178,8 @@ function calcGame(pts,rules,n){
   var oka=(rules.ret-rules.start)*n/1000;
   var rounding=rules.rounding&&rules.rounding!=='none';
   var scores=pts.map(function(p,i){
-    var base=(p-rules.ret)/1000;
-    if(rounding)base=roundVal(base,rules.rounding);
-    var s=base+uma[ranks[i]];
+    var pp=rounding?roundPts(p,rules.rounding):p;
+    var s=(pp-rules.ret)/1000+uma[ranks[i]];
     if(ranks[i]===0)s+=oka;
     return s;
   });
@@ -231,13 +232,13 @@ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(function(){store.pe
 /* ========= 初期データ ========= */
 function seedDefaults(){
   return {
-    '4':{start:25000,ret:30000,uma:'10-30',umaCustom:'',rounding:'none',rateScore:200,rateChip:1000,feePerGame:0,yakitori:10,tobiPenalty:10},
-    '3':{start:35000,ret:40000,uma:'10',umaCustom:'',rounding:'none',rateScore:200,rateChip:1000,feePerGame:0,yakitori:10,tobiPenalty:10}
+    '4':{start:25000,ret:30000,uma:'10-30',umaCustom:'',rounding:'gosha',rateScore:200,rateChip:1000,feePerGame:0,yakitori:10,tobiPenalty:10},
+    '3':{start:35000,ret:40000,uma:'10',umaCustom:'',rounding:'gosha',rateScore:200,rateChip:1000,feePerGame:0,yakitori:10,tobiPenalty:10}
   };
 }
 function seed(){
   var ps=['たじま','あきと','あらた','せいじ'].map(function(n,i){return {id:uid()+i,name:n,color:PAL[i%PAL.length]};});
-  return {v:1,players:ps,sessions:[],currentUserId:ps[0].id,activeSessionId:null,
+  return {v:2,players:ps,sessions:[],currentUserId:ps[0].id,activeSessionId:null,
     prefs:{mode:'all',type:'all',metric:'pay',anaSub:'rank',chart:'pay',mineOnly:false},
     defaults:seedDefaults()};
 }
@@ -451,7 +452,8 @@ function rulesFormHtml(r,n,sid){
     +row('ウマ','<select onchange="rfSet('+ti+',\'uma\',this.value)">'+umaOptions(n,r.uma)+'</select>'
       +(r.uma==='custom'?'<input type="text" style="margin-top:6px;width:100%" placeholder="例: 30,10,-10,-30" value="'+esc(r.umaCustom)+'" onchange="rfSet('+ti+',\'umaCustom\',this.value)">':''))
     +row('端数処理','<select onchange="rfSet('+ti+',\'rounding\',this.value)">'
-      +[['none','端数そのまま(0.1点)'],['round','四捨五入'],['gosha','五捨六入'],['floor','切り捨て'],['ceil','切り上げ']].map(function(a){return opt(a[0],a[1],r.rounding);}).join('')+'</select>')
+      +[['none','端数そのまま(0.1点)'],['round','四捨五入'],['gosha','五捨六入'],['floor','切り捨て'],['ceil','切り上げ']].map(function(a){return opt(a[0],a[1],r.rounding);}).join('')+'</select>'
+      +'<div class="muted" style="font-size:11px">2位以下の素点の100点の位を丸め、丸めで生じた差分はトップが引き受けます</div>')
     +row('ヤキトリ','<input type="number" step="5" value="'+(r.yakitori||0)+'" onchange="rfSet('+ti+',\'yakitori\',this.value)"> pt<div class="muted" style="font-size:11px">和了なしの人が払い、トップが受け取る（0で無効）</div>')
     +row('トビ賞','<input type="number" step="5" value="'+(r.tobiPenalty||0)+'" onchange="rfSet('+ti+',\'tobiPenalty\',this.value)"> pt<div class="muted" style="font-size:11px">飛んだ人が払い、トバシた人が受け取る（0で無効）</div>')
     +row('スコア1pt','<input type="number" step="10" value="'+r.rateScore+'" onchange="rfSet('+ti+',\'rateScore\',this.value)"> P')
@@ -1138,10 +1140,10 @@ function doImport(){
 function importStr(str){
   var d;
   try{d=JSON.parse(str);}catch(e){return alert('JSONの形式が正しくありません');}
-  if(!d||d.v!==1||!Array.isArray(d.players)||!Array.isArray(d.sessions))return alert('雀帳のバックアップ形式ではありません');
+  if(!d||(d.v!==1&&d.v!==2)||!Array.isArray(d.players)||!Array.isArray(d.sessions))return alert('雀帳のバックアップ形式ではありません');
   if(!confirm('現在のデータをこのバックアップで置き換えます。よろしいですか？'))return;
   D=d;UI.histSel=[];UI.histDetail=null;UI.histAgg=null;UI.draft=null;UI.ns=null;
-  save();render();alert('取り込みました');
+  migrate();save();render();alert('取り込みました');
 }
 function wipeAll(){
   if(!confirm('全データを削除して初期状態に戻します。よろしいですか？'))return;
@@ -1185,7 +1187,7 @@ function vSet(){
     +'<div>2. スマホのブラウザでそのURLを開く</div>'
     +'<div>3. iPhone：共有ボタン →「ホーム画面に追加」／ Android：メニュー →「アプリをインストール」</div>'
     +'<div class="muted" style="margin-top:6px">https:// でホストするとオフラインでも起動できます。</div></div>';
-  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.1 — JANCHO</div>';
+  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.2 — JANCHO</div>';
   return h;
 }
 
@@ -1211,15 +1213,26 @@ function onTab(e){
   UI.draft=null;
   goTab(b.getAttribute('data-t'));
 }
+function migrate(){
+  D.prefs=Object.assign({mode:'all',type:'all',metric:'pay',anaSub:'rank',chart:'pay',mineOnly:false},D.prefs||{});
+  var sdf=seedDefaults();D.defaults=D.defaults||{};
+  ['4','3'].forEach(function(mk){D.defaults[mk]=Object.assign({},sdf[mk],D.defaults[mk]||{});});
+  if((D.v||1)<2){
+    ['4','3'].forEach(function(mk){if(D.defaults[mk].rounding==='none')D.defaults[mk].rounding='gosha';});
+    D.sessions.forEach(function(s){
+      if(!s.games.length&&s.rules&&s.rules.rounding==='none')s.rules.rounding='gosha';
+      recalcSession(s);
+    });
+    D.v=2;
+  }
+}
 (async function boot(){
   store.init();
   var d=null;
   try{d=await store.load();}catch(e){}
   D=d||seed();
   if(!d)store.persist(D);
-  D.prefs=Object.assign({mode:'all',type:'all',metric:'pay',anaSub:'rank',chart:'pay',mineOnly:false},D.prefs||{});
-  var sdf=seedDefaults();D.defaults=D.defaults||{};
-  ['4','3'].forEach(function(mk){D.defaults[mk]=Object.assign({},sdf[mk],D.defaults[mk]||{});});
+  migrate();
   document.getElementById('tabbar').addEventListener('click',onTab);
   render();
   if('serviceWorker' in navigator){
