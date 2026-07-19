@@ -90,6 +90,9 @@ label.chk{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-wei
 .seatrow.five.yk{grid-template-columns:30px minmax(0,1fr) 62px 32px 44px 40px}
 .subrow{display:flex;align-items:center;gap:6px;margin:-2px 0 8px 36px;font-size:13px}
 .subrow select{flex:1;min-width:0}
+.ptswrap{display:flex;align-items:center;min-width:0;background:#fff;border:1px solid var(--line);border-radius:10px}
+.ptswrap input[type=text]{flex:1;min-width:0;border:none;background:none;padding:8px 2px 8px 10px}
+.ptswrap .suf{color:var(--sub);font-weight:700;padding-right:9px;font-variant-numeric:tabular-nums}
 .seatbadge{display:inline-flex;width:28px;height:28px;border-radius:8px;background:var(--deep);color:#f2efdf;align-items:center;justify-content:center;font-size:14px;font-weight:800}
 .preview{background:#f7f4e9;border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin-top:8px}
 .warn{color:var(--neg);font-weight:700;font-size:13px}
@@ -708,7 +711,7 @@ function editGame(sid,gid){
   var s=getSess(sid);if(!s)return;
   var g=s.games.find(function(x){return x.id===gid;});if(!g)return;
   UI.draft={sid:sid,gid:gid,seats:g.seats.slice(),input:g.input,
-    vals:(g.input==='pts'?g.pts:(g.base||g.scores)).map(String),
+    vals:g.input==='pts'?g.pts.map(function(p){return String(p/100);}):(g.base||g.scores).map(String),
     tobi:(g.tobi||[]).slice(),yaki:(g.yakitori||[]).slice(),tobiBy:(g.tobiBy||[]).slice()};
   var LN=g.seats.length;
   while(UI.draft.tobi.length<LN)UI.draft.tobi.push(false);
@@ -723,11 +726,12 @@ function prevGameFor(d,s){
   return i>0?s.games[i-1]:null;
 }
 function parseVals(d){
+  var mul=d.input==='pts'?100:1;
   return d.vals.map(function(v){
     v=String(v==null?'':v).trim();
     if(v==='')return null;
     var num=Number(v.replace(/[,，]/g,''));
-    return isNaN(num)?NaN:num;
+    return isNaN(num)?NaN:num*mul;
   });
 }
 function vGameForm(){
@@ -751,7 +755,9 @@ function vGameForm(){
       +'<span class="seatbadge">'+names[i]+'</span>'
       +'<select onchange="draftSeat('+i+',this.value)">'
       +s.playerIds.map(function(pid){return opt(pid,esc(P(pid).name),d.seats[i]);}).join('')+'</select>'
-      +'<input type="text" inputmode="numeric" placeholder="'+(d.input==='pts'?s.rules.start:'±スコア')+'" value="'+esc(d.vals[i])+'" onchange="draftVal('+i+',this.value)">'
+      +(d.input==='pts'
+        ?'<span class="ptswrap"><input type="text" inputmode="numeric" placeholder="'+(s.rules.start/100)+'" value="'+esc(d.vals[i])+'" onchange="draftVal('+i+',this.value)"><span class="suf">00</span></span>'
+        :'<input type="text" inputmode="numeric" placeholder="±スコア" value="'+esc(d.vals[i])+'" onchange="draftVal('+i+',this.value)">')
       +'<button class="btn sm" onclick="draftSign('+i+')">±</button>'
       +(d.input==='score'?'<label class="chk">飛<input type="checkbox" '+(d.tobi[i]?'checked':'')+' onchange="draftTobi('+i+',this.checked)"></label>':'')
       +(Y?'<label class="chk" title="ヤキトリ（和了なし）">ヤ<input type="checkbox" '+(d.yaki[i]?'checked':'')+' onchange="draftYaki('+i+',this.checked)"></label>':'')
@@ -881,7 +887,7 @@ function autoFill(){
   if(!empt.length)return;
   if(empt.length>1)return alert('自動計算するには空欄を1つにしてください');
   var rest=s.rules.start*n-nums.filter(function(v){return v!==null;}).reduce(function(a,b){return a+b;},0);
-  d.vals[empt[0]]=String(rest);render();
+  d.vals[empt[0]]=String(rest/100);render();
 }
 function draftSave(){
   var d=UI.draft,s=getSess(d.sid),n=d.seats.length;
@@ -1187,7 +1193,7 @@ function vSet(){
     +'<div>2. スマホのブラウザでそのURLを開く</div>'
     +'<div>3. iPhone：共有ボタン →「ホーム画面に追加」／ Android：メニュー →「アプリをインストール」</div>'
     +'<div class="muted" style="margin-top:6px">https:// でホストするとオフラインでも起動できます。</div></div>';
-  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.2 — JANCHO</div>';
+  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.3 — JANCHO</div>';
   return h;
 }
 
