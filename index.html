@@ -24,8 +24,11 @@ body{margin:0;background:var(--bg);color:var(--ink);
   font-size:15px;line-height:1.55}
 #app{max-width:640px;margin:0 auto;padding:0 14px calc(88px + env(safe-area-inset-bottom))}
 .appbar{margin:0 -14px 14px;padding:calc(12px + env(safe-area-inset-top)) 18px 11px;
-  background:linear-gradient(135deg,var(--deep),var(--deep2));color:#f2efdf;
+  background:linear-gradient(90deg,var(--deep),var(--deep2));color:#f2efdf;
   display:flex;align-items:baseline;gap:10px}
+/* ホーム画面アプリ時、ステータスバー（時計の帯）の背景を常に濃い緑で覆う。スクロールした内容が時計の裏に透けないようにする */
+#sbar{position:fixed;top:0;left:0;right:0;z-index:35;max-width:640px;margin:0 auto;height:0;height:env(safe-area-inset-top,0px);
+  background:linear-gradient(90deg,var(--deep),var(--deep2));pointer-events:none}
 .appbar h1{margin:0;font-size:19px;font-weight:800;letter-spacing:.22em}
 .appbar .en{font-size:10px;letter-spacing:.14em;opacity:.7}
 h2{font-size:12px;color:var(--sub);letter-spacing:.14em;margin:20px 2px 8px;font-weight:700}
@@ -72,10 +75,14 @@ th:first-child,td:first-child{text-align:left}
 tr.tap{cursor:pointer}
 tr.me{background:var(--acc-soft)}
 .footrow td{font-weight:800;border-top:2px solid var(--deep);border-bottom:none}
-.tblwrap{overflow-x:auto;margin:0 -14px;padding:0 14px}
+.tblwrap{margin:0 -14px;padding:0 14px}
+.tblwrap.scroll{overflow-x:auto} /* 最小文字でも収まらない場合のみ横スクロール（fitTablesが付与） */
 /* 集計表：プレイヤー列を等幅にして画面幅に収める（横スクロールなし） */
 .agg th,.agg td{padding:8px 3px;white-space:normal}
 .agg th{line-height:1.3;overflow-wrap:anywhere;vertical-align:bottom;font-size:max(.786em,9px)}
+/* プレイヤー名の行は、下にスクロールしても画面上部（ステータスバーのすぐ下）に固定表示 */
+.agg th{position:-webkit-sticky;position:sticky;top:-1px;top:calc(env(safe-area-inset-top,0px) - 1px);z-index:2;
+  background:var(--card);border-bottom:0;box-shadow:inset 0 -2px 0 var(--line)}
 .agg th .dot{margin-right:4px}
 .agg .rl{padding-left:0;white-space:nowrap;font-size:.8em;font-size:max(.8em,9px);font-weight:600;color:var(--sub)}
 .agg .rl small{font-size:.86em;font-weight:600;color:var(--sub)}
@@ -136,6 +143,7 @@ svg.chart{width:100%;height:190px;display:block}
 </style>
 </head>
 <body>
+<div id="sbar"></div>
 <div id="app">
   <header class="appbar"><h1>雀帳</h1><span class="en">JANCHO — 麻雀収支帳</span></header>
   <main id="view"></main>
@@ -485,6 +493,8 @@ function fitTables(){
       fs-=0.5;
       t.style.fontSize=fs+'px';
     }
+    /* それでも収まらない表だけ横スクロール可にする（その場合はヘッダー固定は効かない） */
+    if(p.classList&&p.classList.contains('tblwrap'))p.classList.toggle('scroll',t.getBoundingClientRect().width>avail+0.5);
   }
 }
 
@@ -1241,7 +1251,7 @@ function vSet(){
     +'<div>2. スマホのブラウザでそのURLを開く</div>'
     +'<div>3. iPhone：共有ボタン →「ホーム画面に追加」／ Android：メニュー →「アプリをインストール」</div>'
     +'<div class="muted" style="margin-top:6px">https:// でホストするとオフラインでも起動できます。</div></div>';
-  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.4 — JANCHO</div>';
+  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.5 — JANCHO</div>';
   return h;
 }
 
