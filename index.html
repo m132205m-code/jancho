@@ -18,6 +18,7 @@
   --pos:#2456a8; --neg:#bf3a2b; --gold:#c9a227; --r:14px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
   font-size:15px;line-height:1.55}
@@ -49,6 +50,7 @@ select,input[type=text],input[type=number],input[type=date],textarea{
   font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-width:100%}
 input[type=number],input[inputmode=numeric],input[inputmode=decimal]{font-variant-numeric:tabular-nums;text-align:right}
 textarea{width:100%;font-size:12px}
+input[type=file]{max-width:100%}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:700;
   border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:9px 14px;cursor:pointer}
 .btn.primary{background:var(--deep);border-color:var(--deep);color:#f4f2e4}
@@ -63,14 +65,31 @@ textarea{width:100%;font-size:12px}
 .seg{display:flex;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff}
 .seg button{flex:1;font:inherit;font-weight:700;padding:8px;border:none;background:transparent;cursor:pointer;color:var(--ink)}
 .seg button.on{background:var(--deep);color:#f2efdf}
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);font-size:14px;white-space:nowrap}
-th{color:var(--sub);font-size:11px;font-weight:700;letter-spacing:.05em}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--line);font-size:1em;white-space:nowrap}
+th{color:var(--sub);font-size:.786em;font-weight:700;letter-spacing:.05em}
 th:first-child,td:first-child{text-align:left}
 tr.tap{cursor:pointer}
 tr.me{background:var(--acc-soft)}
 .footrow td{font-weight:800;border-top:2px solid var(--deep);border-bottom:none}
 .tblwrap{overflow-x:auto;margin:0 -14px;padding:0 14px}
+/* 集計表：プレイヤー列を等幅にして画面幅に収める（横スクロールなし） */
+.agg th,.agg td{padding:8px 3px;white-space:normal}
+.agg th{line-height:1.3;overflow-wrap:anywhere;vertical-align:bottom;font-size:max(.786em,9px)}
+.agg th .dot{margin-right:4px}
+.agg .rl{padding-left:0;white-space:nowrap;font-size:.8em;font-size:max(.8em,9px);font-weight:600;color:var(--sub)}
+.agg .rl small{font-size:.86em;font-weight:600;color:var(--sub)}
+.agg .mk{display:inline-block;margin-left:8px;font-size:.72em;font-size:max(.72em,9px);white-space:nowrap}
+.agg .mk .yk{color:var(--gold)}
+.agg .num{white-space:nowrap}
+.agg .footrow td{font-size:.93em}
+.agg .footrow .rl{font-size:.8em;font-size:max(.8em,9px);font-weight:800;color:var(--ink)}
+.agg td.sep{text-align:left;background:#f7f4e9;padding-left:6px}
+/* 席・起家別の表 */
+.seat th,.seat td{padding:7px 3px}
+.seat th{line-height:1.3;vertical-align:bottom;font-size:max(.786em,9px)}
+.seat th:first-child,.seat td:first-child{padding-left:0}
+.seat .sb{font-size:.72em;font-size:max(.72em,9px);font-weight:700;color:var(--sub);margin-left:4px}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--acc-soft);color:var(--acc);margin-right:4px;vertical-align:1px}
 .badge.free{background:#f0e5d0;color:#8a6b31}
 .badge.rec{background:#fbe9c8;color:#8a6b31}
@@ -81,8 +100,9 @@ tr.me{background:var(--acc-soft)}
 .rowline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .spread{display:flex;align-items:center;justify-content:space-between;gap:8px}
 label.chk{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600}
-.formrow{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.formrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;margin-bottom:8px}
 .formrow .lb{font-size:12px;color:var(--sub);font-weight:700}
+.formrow input[type=number]{width:7em}
 .seatrow{display:grid;grid-template-columns:30px minmax(0,1fr) 88px 38px;gap:6px;align-items:center;margin-bottom:6px}
 .seatrow.five{grid-template-columns:30px minmax(0,1fr) 74px 36px 48px}
 .seatrow select{min-width:0}
@@ -100,6 +120,7 @@ label.chk{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-wei
 svg.chart{width:100%;height:190px;display:block}
 .subtabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
 .subtabs .pill{flex:0 0 auto}
+@media (max-width:340px){.subtabs .pill{padding:6px 8px}}
 .empty{text-align:center;color:var(--sub);padding:26px 8px}
 .empty .big{font-size:34px;margin-bottom:6px}
 #tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;border-top:1px solid var(--line);
@@ -142,6 +163,7 @@ function fmtNum(v){var r=round1(v);return Number.isInteger(r)?r.toLocaleString('
 function cls(v){return v>0?'pos':(v<0?'neg':'');}
 function scoreHtml(v){return '<span class="num '+cls(v)+'">'+(v>0?'+':'')+fmtNum(v)+'</span>';}
 function payHtml(v){var r=Math.round(v);return '<span class="num '+cls(r)+'">'+(r>0?'+':'')+r.toLocaleString('ja-JP')+'P</span>';}
+function payNum(v){var r=Math.round(v);return '<span class="num '+cls(r)+'">'+(r>0?'+':'')+r.toLocaleString('ja-JP')+'</span>';}
 function pct(a,b){return b?(Math.round(a/b*1000)/10).toFixed(1)+'%':'–';}
 function opt(v,l,cur){return '<option value="'+v+'"'+(String(v)===String(cur)?' selected':'')+'>'+l+'</option>';}
 
@@ -418,27 +440,52 @@ function aggTableHtml(list,tapEdit){
     s.playerIds.forEach(function(pid){var e=t[pid];if(!e)return;var g=tot[pid];
       g.chips+=e.chips;g.score=round1(g.score+e.score);g.pay+=e.pay;g.games+=e.games;});
   });
+  /* プレイヤー列は等幅（残り約14%が左端の見出し列）。画面幅に収まらない場合は fitTables が文字を縮める */
+  var np=players.length,pcw=(Math.floor(8600/np)/100)+'%';
   var gi=0,rows='';
   list.forEach(function(s){
-    if(list.length>1)rows+='<tr><td colspan="'+(players.length+1)+'" style="text-align:left;background:#f7f4e9" class="muted">'
+    if(list.length>1)rows+='<tr><td colspan="'+(np+1)+'" class="muted sep">'
       +esc(s.date)+'　<span class="badge'+(s.type==='free'?' free':'')+'">'+TYPE_LABEL[s.type]+'</span><span class="badge">'+MODE_LABEL[s.mode]+'</span></td></tr>';
     s.games.forEach(function(g){
       gi++;
-      rows+='<tr'+(tapEdit?(' class="tap" onclick="editGame(\''+s.id+'\',\''+g.id+'\')"'):'')+'><td>'+gi+'</td>';
+      rows+='<tr'+(tapEdit?(' class="tap" onclick="editGame(\''+s.id+'\',\''+g.id+'\')"'):'')+'><td class="rl">'+gi+'</td>';
       players.forEach(function(pid){
         var i=g.seats.indexOf(pid);
-        rows+=i<0?'<td class="muted">－</td>'
-          :'<td>'+scoreHtml(g.scores[i])+((g.tobi&&g.tobi[i])?'<span class="neg" style="font-size:10px"> 飛</span>':'')+((g.yakitori&&g.yakitori[i])?'<span style="font-size:10px;color:var(--gold)"> ヤ</span>':'')+'</td>';
+        if(i<0){rows+='<td class="muted">－</td>';return;}
+        var mk=aggMarks(g.tobi&&g.tobi[i],g.yakitori&&g.yakitori[i]);
+        rows+='<td>'+(mk?mk+' ':'')+scoreHtml(g.scores[i])+'</td>';
       });
       rows+='</tr>';
     });
   });
-  if(!gi)rows='<tr><td colspan="'+(players.length+1)+'" class="muted">半荘の記録がまだありません</td></tr>';
-  var head='<tr><th>#</th>'+players.map(function(pid){return '<th>'+pdot(pid)+pname(pid)+'</th>';}).join('')+'</tr>';
-  var foot='<tr class="footrow"><td>チップ</td>'+players.map(function(pid){var c=tot[pid].chips;return '<td class="num '+cls(c)+'">'+(c>0?'+':'')+c+'</td>';}).join('')+'</tr>'
-    +'<tr class="footrow"><td>スコア</td>'+players.map(function(pid){return '<td>'+scoreHtml(tot[pid].score)+'</td>';}).join('')+'</tr>'
-    +'<tr class="footrow"><td>収支</td>'+players.map(function(pid){return '<td>'+payHtml(tot[pid].pay)+'</td>';}).join('')+'</tr>';
-  return '<div class="tblwrap"><table>'+head+rows+foot+'</table></div>';
+  if(!gi)rows='<tr><td colspan="'+(np+1)+'" class="muted">半荘の記録がまだありません</td></tr>';
+  var head='<tr><th class="rl">#</th>'+players.map(function(pid){return '<th style="width:'+pcw+'">'+pdot(pid)+pname(pid)+'</th>';}).join('')+'</tr>';
+  var foot='<tr class="footrow"><td class="rl">チップ</td>'+players.map(function(pid){var c=tot[pid].chips;return '<td class="num '+cls(c)+'">'+(c>0?'+':'')+c+'</td>';}).join('')+'</tr>'
+    +'<tr class="footrow"><td class="rl">スコア</td>'+players.map(function(pid){return '<td>'+scoreHtml(tot[pid].score)+'</td>';}).join('')+'</tr>'
+    +'<tr class="footrow"><td class="rl">収支<small>(P)</small></td>'+players.map(function(pid){return '<td>'+payNum(tot[pid].pay)+'</td>';}).join('')+'</tr>';
+  return '<div class="tblwrap"><table class="agg">'+head+rows+foot+'</table></div>';
+}
+function aggMarks(tobiF,yakiF){
+  if(!tobiF&&!yakiF)return '';
+  return '<span class="mk">'+(tobiF?'<span class="neg">飛</span>':'')+(yakiF?'<span class="yk">ヤ</span>':'')+'</span>';
+}
+/* 表が親の幅からはみ出すときは、収まるまで文字を少しずつ小さくする（横スクロールを出さないための安全網） */
+var FIT_MIN_FS=10;
+function fitTables(){
+  if(typeof getComputedStyle!=='function')return;
+  var ts=document.querySelectorAll('#view table');
+  for(var i=0;i<ts.length;i++){
+    var t=ts[i],p=t.parentNode;
+    t.style.fontSize='';
+    var cs=getComputedStyle(p);
+    var avail=p.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+    if(!(avail>0))continue;
+    var fs=parseFloat(getComputedStyle(t).fontSize)||14;
+    while(fs>FIT_MIN_FS&&t.getBoundingClientRect().width>avail+0.5){
+      fs-=0.5;
+      t.style.fontSize=fs+'px';
+    }
+  }
 }
 
 /* ========= ルール編集フォーム ========= */
@@ -825,7 +872,7 @@ function previewHtml(d,s,n,names){
     order.sort(function(a,b){return res.ranks[a]-res.ranks[b];});
     order.forEach(function(i){
       rows+='<tr><td><span class="rk rk'+(res.ranks[i]+1)+'">'+(res.ranks[i]+1)+'</span></td>'
-        +'<td style="text-align:left">'+names[i]+' '+pname(d.seats[i])+'</td>'
+        +'<td style="text-align:left;white-space:normal">'+names[i]+' '+pname(d.seats[i])+'</td>'
         +'<td class="num">'+nums[i].toLocaleString('ja-JP')+'</td>'
         +'<td>'+scoreHtml(fin[i])+markers(res.tobi[i],d.yaki[i])+'</td></tr>';
     });
@@ -839,7 +886,7 @@ function previewHtml(d,s,n,names){
   order.sort(function(a,b){return ranks[a]-ranks[b];});
   order.forEach(function(i){
     rows+='<tr><td><span class="rk rk'+(ranks[i]+1)+'">'+(ranks[i]+1)+'</span></td>'
-      +'<td style="text-align:left">'+names[i]+' '+pname(d.seats[i])+'</td>'
+      +'<td style="text-align:left;white-space:normal">'+names[i]+' '+pname(d.seats[i])+'</td>'
       +'<td>'+scoreHtml(fin2[i])+markers(d.tobi[i],d.yaki[i])+'</td></tr>';
   });
   return '<div class="preview">'+sumline+'<table><tr><th></th><th>席</th><th>スコア</th></tr>'+rows+'</table>'
@@ -988,7 +1035,7 @@ function anaRank(){
   h+='<div class="card"><table><tr><th>順位</th><th style="text-align:left">プレイヤー</th><th>'+METRICS.find(function(a){return a[0]===m;})[1]+'</th><th>半荘</th></tr>';
   rows.forEach(function(r,i){
     h+='<tr'+(r.p.id===D.currentUserId?' class="me"':'')+'><td>'+(i+1)+'</td>'
-      +'<td style="text-align:left">'+pdot(r.p.id)+esc(r.p.name)+'</td>'
+      +'<td style="text-align:left;white-space:normal">'+pdot(r.p.id)+esc(r.p.name)+'</td>'
       +'<td>'+metricFmt(r.v,m)+'</td><td class="muted">'+r.st.games+'</td></tr>';
   });
   return h+'</table></div>';
@@ -998,18 +1045,19 @@ function anaSeat(){
   var total=ss.res.reduce(function(a,e){return a+e.n;},0);
   var h='<div class="muted" style="margin-bottom:8px">'+pname(D.currentUserId)+' の、半荘開始時の席（東＝起家）ごとの成績です。</div>';
   if(!total)return h+'<div class="card empty">対象の対局がまだありません</div>';
-  h+='<div class="card"><table><tr><th style="text-align:left">席</th><th>半荘</th><th>平均着順</th><th>トップ率</th><th>ラス率</th><th>平均スコア</th></tr>';
+  h+='<div class="card"><div class="tblwrap"><table class="seat"><tr><th>席</th><th>半荘</th><th>平均<br>着順</th><th>トップ率</th><th>ラス率</th><th>平均<br>スコア</th></tr>';
   var best=null;
   for(var i=0;i<ss.maxSeats;i++){
-    var e=ss.res[i],lb=seatNames(ss.maxSeats)[i]+(i===0?'（起家）':(i===ss.maxSeats-1?'（ラス親）':''));
+    var e=ss.res[i],nm=seatNames(ss.maxSeats)[i],tag=(i===0?'起家':(i===ss.maxSeats-1?'ラス親':''));
+    var lb=nm+(tag?'（'+tag+'）':'');
     var avg=e.n?(e.rs/e.n):null;
     if(avg!=null&&(best==null||avg<best.avg))best={lb:lb,avg:avg,n:e.n};
-    h+='<tr><td style="text-align:left">'+lb+'</td><td>'+e.n+'</td>'
+    h+='<tr><td>'+nm+(tag?'<span class="sb">'+tag+'</span>':'')+'</td><td>'+e.n+'</td>'
       +'<td>'+(avg==null?'–':avg.toFixed(2))+'</td>'
       +'<td>'+pct(e.top,e.n)+'</td><td>'+pct(e.last,e.n)+'</td>'
       +'<td>'+(e.n?scoreHtml(round1(e.sc/e.n)):'–')+'</td></tr>';
   }
-  h+='</table>';
+  h+='</table></div>';
   if(best)h+='<div class="ok" style="margin-top:8px">💡 最も好調なのは '+best.lb+' スタート（平均 '+best.avg.toFixed(2)+' 着・'+best.n+'半荘）</div>';
   if(ss.nuke)h+='<div class="muted" style="margin-top:4px">抜け番：'+ss.nuke+'回（4人3麻）</div>';
   return h+'</div>';
@@ -1193,7 +1241,7 @@ function vSet(){
     +'<div>2. スマホのブラウザでそのURLを開く</div>'
     +'<div>3. iPhone：共有ボタン →「ホーム画面に追加」／ Android：メニュー →「アプリをインストール」</div>'
     +'<div class="muted" style="margin-top:6px">https:// でホストするとオフラインでも起動できます。</div></div>';
-  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.3 — JANCHO</div>';
+  h+='<div class="muted" style="text-align:center;margin:16px 0">雀帳 v1.4 — JANCHO</div>';
   return h;
 }
 
@@ -1211,6 +1259,7 @@ function render(){
     b.classList.toggle('on',b.getAttribute('data-t')===UI.tab);
   });
   document.getElementById('view').innerHTML=html;
+  fitTables();
 }
 function onTab(e){
   var b=e.target.closest('button');if(!b)return;
@@ -1240,6 +1289,7 @@ function migrate(){
   if(!d)store.persist(D);
   migrate();
   document.getElementById('tabbar').addEventListener('click',onTab);
+  if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('resize',fitTables);
   render();
   if('serviceWorker' in navigator){
     try{navigator.serviceWorker.register('sw.js').catch(function(){});}catch(e){}
